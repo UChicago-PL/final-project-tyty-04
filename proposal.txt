@@ -1,0 +1,19 @@
+My idea is to make a program to automate different dice rolls. Users will type expression
+such as "2d6" and it will print out the results of rolling the dice. I hope to allow for all 
+sorts of different modifiers and types of rolls, similar to what you might find in Dungeons
+and Dragons or similar games. It will also allow for storing stats to be used in the rolls as well.
+
+Easy: For the base level implementation, I will focus on getting just the main dice rolling down. 
+Allowing for simple expressions such as "d20" or "3d6" and handling those. Once the basics of rolling
+is down it will be easier to add on things such as modifiers and advantage.
+
+Medium: Once basic rolling is down, my next goal is to add stat tracking and modifiers or allow for 
+static modifiers on the rolls. Users will be able to set their strenght, dexterity, etc and then use 
+those in rolls such as "d20 + str" or simply roll a str check with "str". This will probably use State 
+to keep track of the stats. As part of this level I will also the ability to do simple modifiers as 
+well such as "d8 + 2". 
+
+Challenge: After all the main implementations are done. I will add all the other types of rolls you might 
+encounter. Things like advantage/disadvatage, roll x keep/drop y, comibining different types of dice, etc. 
+The goal will essentially be to add as much different functionality as I can to allow for anything a user
+might want to roll for. 
