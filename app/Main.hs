@@ -35,7 +35,7 @@ doRoll stats = do
         Result rolls -> do
             gen <- newStdGen
             let results = evalState (mapM roll rolls) gen
-            maybeMods <- getMods
+            maybeMods <- getMods stats
             case maybeMods of
                 Quit -> putStrLn "Goodbye! Thank you for using Dice Roller." >> exitSuccess
                 Return -> pure stats
@@ -44,7 +44,7 @@ doRoll stats = do
                     putStrLn "Results:" 
                     mapM_ print results
                     putStrLn $ "Total: " ++ show (sum (map snd results) + totalMods)
-                    pure stats
+                    doRoll stats
 
 doStats :: StatMap -> IO StatMap
 doStats stats = do
@@ -65,6 +65,9 @@ getRolls = do
     case rollInput of
         "q" -> pure Quit
         "r" -> pure Return
+        "" -> do
+            putStrLn "Please enter at least one roll."
+            getRolls
         _ -> case mapM parseRoll (words rollInput) of
             Nothing -> do
                 putStrLn "Invalid input."
@@ -87,26 +90,33 @@ getStats stats = do
     case statInput of
         "q" -> pure Quit
         "r" -> pure Return
-        _ -> case mapM parseStats (words statInput) of
+        "" -> do
+            putStrLn "Please enter at least one stat assignment."
+            getStats stats
+        _ -> case mapM (parseStats stats) (words statInput) of
             Nothing -> do
                 putStrLn "Invalid input."
                 getStats stats
             Just validStats -> pure (Result validStats)
 
 -- Parse a stat assignment in the form stat=val and return the stat name and value or nothing
-parseStats :: String -> Maybe (String, Int)
-parseStats input = case break (== '=') input of
-    (stat, '=':val) -> case reads val of
+parseStats :: StatMap -> String -> Maybe (String, Int)
+parseStats stats input = case break (== '=') input of
+    (stat, '=':val) | isValidStat stats stat -> case reads val of
         [(n, "")] -> Just (stat, n)
         _ -> Nothing
     _ -> Nothing
 
+-- Check if a stat is valid
+isValidStat :: StatMap -> String -> Bool
+isValidStat stats s = Map.member s stats
+
 data Mod = FlatMod Int | StatMod String deriving (Show)
 
 -- Get modifiers from user input in the format +N or -N
-getMods :: IO (UserInput [Mod])
-getMods = do
-    putStrLn "Enter modifiers separated by spaces (e.g. +2 -1 +str). Enter 'r' to return to main menu or 'q' to quit:"
+getMods :: StatMap -> IO (UserInput [Mod])
+getMods stats = do
+    putStrLn "Enter modifiers separated by spaces (e.g. +2 -1 +str). Press Enter to skip. Enter 'r' to return to main menu or 'q' to quit:"
     modInput <- getLine
     case modInput of
         "q" -> pure Quit
@@ -114,8 +124,13 @@ getMods = do
         _ -> case mapM parseMod (words modInput) of
             Nothing -> do
                 putStrLn "Invalid input."
-                getMods 
-            Just validMods -> pure (Result validMods)
+                getMods stats
+            Just validMods -> case mapM (validateMod stats) validMods of
+                Nothing -> do
+                    putStrLn "Invalid input."
+                    getMods stats 
+                Just _ -> pure (Result validMods)
+
 
 -- Parse a single modifier in +N or -N format into an integer
 parseMod :: String -> Maybe Mod
@@ -133,6 +148,13 @@ parseMod input = case input of
 resolveMod :: StatMap -> Mod -> Int 
 resolveMod _ (FlatMod n) = n
 resolveMod stats (StatMod s) = (stats Map.! s - 10) `div` 2
+
+-- Validate that all state modifiers are valid stats
+validateMod :: StatMap -> Mod -> Maybe Mod
+validateMod stats (StatMod s) 
+    | isValidStat stats s = Just (StatMod s)
+    | otherwise = Nothing
+validateMod _ m = Just m
 
 -- Roll N dice with S sides and return the individual rolls and their total
 roll :: (Int, Int) -> RandState ([Int], Int)
