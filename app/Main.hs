@@ -130,7 +130,7 @@ parseRoll input = case break (== 'd') input of
 -- Get stat assignments from user in the form of stat val
 getStats :: StatMap -> IO (UserInput [(String, Int)])
 getStats stats = do
-    putStrLn "Enter stat assignments in the form 'stat=val' separated by spaces (e.g. str=15 dex=12). Enter 'roll' to generate 6 values using the standard roll 4d6 drop 1 method. Enter 'r' to return to main menu or 'q' to quit:"
+    putStrLn "Enter stat assignments in the form 'stat=val' separated by spaces (e.g. str=15 dex=12). Enter 'roll' to generate 6 values using the standard roll 4d6 drop 1 method. Enter 'h' for a list of stats. Enter 'v' to view your current stats. Enter 'r' to return to main menu or 'q' to quit:"
     statInput <- getLine
     case statInput of
         "q" -> pure Quit
@@ -144,6 +144,12 @@ getStats stats = do
             let genStats = map (\(r, _) -> sum r - minimum r) rolls
             putStrLn $ "Generated stats: " ++ show genStats
             putStrLn "Note: This doesn't automatically change your stats, it's up to you to assign these values how you wish."
+            getStats stats
+        "h" -> do
+            putStrLn "Available stats: str, dex, con, int, wis, cha"
+            getStats stats
+        "v" -> do
+            mapM_ print (Map.toList stats)
             getStats stats
         _ -> case mapM (parseStats stats) (words statInput) of
             Nothing -> do
