@@ -1,0 +1,12 @@
+My project is a command line dice rolling interface. It allows the user to roll any number of any type of dice in any
+combination. The user may also add modifiers and flags to the roll. Modifiers are either flat integer additions or 
+subtractions or stat modifiers. Flags tell the program to roll with advantage, disadvantage, or roll X drop Y. For stats,
+The user may modify the 6 basic Dungeons and Dragons stats. They can either enter any values they wish or have the program
+roll them six values to be assigned. It's all in one file and split into a series of different functions to handle the 
+different parts of the program. loop acts as the sort of main menu, where the user can either go to the stats or rolling section.
+Then the two main functions are doRoll and doStats, which handle the funcitonality of their respecive parts. doRoll works through
+getRoll, getMods, and getFlags and then calculates the final result of the roll. Each of these functions has helpers in the form
+of parsing and validation to ensure the user is entering valid inputs for each part. doStats has a similar structure where it calls
+getStats and the user can input any number of stat changes they wish. The user can also view their current stats from here. The 
+program is run on the command line and all of the inputs are explained to the user at each step. For the flags and stats, the user 
+can also prompt the program for a list of avaiable options. Run 'cabal run' while in the program file and get to rolling dice.
